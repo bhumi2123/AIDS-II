@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.
+js"></script>
+
+<script type="text/javascript"
+src="https://www.gstatic.com/charts/loader.js"></script> <style>
+body {
+font-family: Arial, sans-serif;
+background-color: #f4f7f9;
+color: #333;
+padding: 20px;
+margin: 0;
+}
+h1 {
+text-align: center;
+color: #4a4a4a;
+}
+h2 {
+text-align: center;
+color: #666;
+margin-bottom: 10px;
+}
+.chart-container {
+background-color: white;
+border: 1px solid #ddd;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+margin: 20px auto;
+padding: 20px;
+max-width: 800px;
+}
+.chart {
+height: 400px;
+margin: 20px 0;
+}
+</style>
+</head>
+<body>
+<h1>Stock Data Analysis</h1>
+<div class="chart-container" id="profit-section">
+<h2>Profitable Companies</h2>
+<div id="profit-piechart" class="chart"></div>
+<div id="profit-linechart" class="chart"></div>
+<div id="profit-barchart" class="chart"></div>
+</div>
+<div class="chart-container" id="loss-section">
+<h2>Loss-making Companies</h2>
+<div id="loss-piechart" class="chart"></div>
+<div id="loss-linechart" class="chart"></div>
+<div id="loss-barchart" class="chart"></div>
+</div>
+<script type="text/javascript">
+google.charts.load('current', {'packages':['corechart', 'line']});
+function loadData() {
+Papa.parse("National_Stock_Exchange_of_India_Ltd.csv", { // Replace with
+your CSV file path
+
+download: true,
+header: true,
+complete: function(results) {
+processChartData(results.data);
+}
+});
+}
+function processChartData(data) {
+const profitableCompanies = [];
+const lossMakingCompanies = [];
+data.forEach(function(row) {
+const change = parseFloat(row['Chng']);
+const ltp = parseFloat(row['LTP']);
+const volume = parseFloat(row['Volume (lacs)'].replace(/,/g, ''));
+if (!isNaN(change) && !isNaN(ltp) && !isNaN(volume)) {
+if (change < 0) {
+lossMakingCompanies.push([row.OpenSymbol, -change, ltp,
+volume]);
+} else {
+profitableCompanies.push([row.OpenSymbol, change, ltp,
+volume]);
+}
+}
+});
+drawCharts(profitableCompanies, lossMakingCompanies);
+}
+function drawCharts(profitData, lossData) {
+drawPieChart('profit-piechart', profitData, 'Profitable Companies');
+drawPieChart('loss-piechart', lossData, 'Loss-making Companies');
+drawLineChart('profit-linechart', profitData, 'Profitable Companies');
+drawLineChart('loss-linechart', lossData, 'Loss-making Companies');
+drawBarChart('profit-barchart', profitData, 'Profitable Companies');
+drawBarChart('loss-barchart', lossData, 'Loss-making Companies'); }
+function drawPieChart(elementId, data, title) {
+const chartData = [['Company', 'Change']];
+data.forEach(row => chartData.push([row[0], row[1]]));
+const dataTable = google.visualization.arrayToDataTable(chartData); const
+options = { title, is3D: true, height: 300 };
+const chart = new
+google.visualization.PieChart(document.getElementById(elementId));
+chart.draw(dataTable, options);
+}
+function drawLineChart(elementId, data, title) {
+const chartData = [['Company', 'LTP']];
+data.forEach(row => chartData.push([row[0], row[2]]));
+const dataTable = google.visualization.arrayToDataTable(chartData); const
+options = { title, curveType: 'function', height: 300, legend: { position:
+'bottom' } };
+const chart = new
+google.visualization.LineChart(document.getElementById(elementId));
+chart.draw(dataTable, options);
+}
+
+function drawBarChart(elementId, data, title) {
+const chartData = [['Company', 'Volume (lacs)']];
+data.forEach(row => chartData.push([row[0], row[3]]));
+const dataTable = google.visualization.arrayToDataTable(chartData); const
+options = { title, height: 300 };
+const chart = new
+google.visualization.BarChart(document.getElementById(elementId));
+chart.draw(dataTable, options);
+}
+google.charts.setOnLoadCallback(loadData);
+</script>
+</body>
+</html>
